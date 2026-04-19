@@ -153,6 +153,26 @@ def normalize_input_df(df: pd.DataFrame, pseudo_map: dict = None) -> pd.DataFram
         df["pseudo_MHC"] = df["MHC"].map(pseudo_map)
         df["pseudo_MHC"] = df["pseudo_MHC"].astype(str).str.strip().str.upper()
 
+    # # ---- filter rows with peptide>15 cdr3 length > 20 ----
+    # peptide_too_long = pd.Series(False, index=df.index)
+    # cdr3_too_long = pd.Series(False, index=df.index)
+    # if "peptide" in df.columns:
+    #     peptide_too_long = df["peptide"].fillna("").astype(str).str.len() > 15
+
+    # if "cdr3" in df.columns:
+    #     cdr3_too_long = df["cdr3"].fillna("").astype(str).str.len() > 20
+
+    # invalid_mask = peptide_too_long | cdr3_too_long
+    # if invalid_mask.any():
+    #     n_total = invalid_mask.sum()
+    #     n_peptide = peptide_too_long.sum()
+    #     n_cdr3 = cdr3_too_long.sum()
+    #     print(
+    #         f"[Warning] Filtered out {n_total} rows "
+    #         f"(peptide length > 15: {n_peptide}, cdr3 length > 20: {n_cdr3})."
+    #     )
+    #     df = df.loc[~invalid_mask].copy()
+
     return df.reset_index(drop=True)
 
 
@@ -525,7 +545,7 @@ if __name__ == "__main__":
     batch_size = int(cli_args.get("batch_size", "16"))
     contact_batch_size = int(cli_args.get("contact_batch_size", cli_args.get("batch_size", "8")))
 
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    device = "cuda" if torch.cuda.is_available() else ("mps" if torch.backends.mps.is_available() else "cpu")
     logger.info(f"Using device: {device}")
     logger.info(f"Tasks: {tasks}")
     logger.info(f"Output directory: {out_dir}")
